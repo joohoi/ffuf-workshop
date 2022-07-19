@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>ffuf the web</title>
+
+
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/black.css" id="theme">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+				<section>
+          <h1 class="r-fit-text">ffuf the web</h1>
+                    <h3>automatable web attack techniques</h3>
+
+				</section>
+
+        <section>
+          <h2>whoami</h2>
+          <img src="avatar.jpg" style="border-radius:50%;width: 15%;" />
+          <h3>Joona Hoikkala</h3>
+          <ul style="list-style-type: circle;">
+            <li style="font-size: 0.7em;"><a href="https://twitter.com/joohoi">@joohoi</a> everywhere on the inter{webs,tubes,pipes}</li>
+            <li style="font-size: 0.7em;">Red team manager at <img style="vertical-align: middle;width: 4em;margin: 0px;" data-src="visma_logo.png"></li>
+            <li style="font-size: 0.7em;">Open source stuff: <strong>acme-dns</strong>, <strong>ffuf</strong>, <strong>certbot</strong></li>
+            <li style="font-size: 0.7em;">Dad, board game geek, brewer</li>
+          </ul>
+        </section>
+
+        <section>
+            <h3>Why to automate?</h3>
+            <p>
+                <ul>
+                    <li style="font-size: 0.7em;">Scaling to infinity</li>
+                    <li style="font-size: 0.7em;">Pre-defined and reproducible process / methodology</li>
+                    <li style="font-size: 0.7em;">Iterative improvements</li>
+                    <li style="font-size: 0.7em;">Letting the computers to the boring part...</li>
+                </ul></p>
+        </section>
+        <section>
+            <h2>What can we find with this approach?</h2>
+            <ul style="list-style-type: circle;">
+                <li style="font-size: 0.7em;">Recon: content, virtualhosts, parameters, api endpoints, misconfigurations</li>
+                <li style="font-size: 0.7em;">Vulnerabilities: XSS, SQLi, LFI, SSRF, IDOR, SSTI</li>
+                <li style="font-size: 0.7em;">It all boils down to which part of the request to fuzz, and with what kind of inputs...</li>
+            </ul>
+        </section>
+        <section>
+            <h2>Building blocks</h2>
+            <section>
+                <img src="automation.gif" />
+                <p>Recon -> Identification -> Reporting / exploitation</p>
+            </section>
+            <section>
+                <h4>Recon</h4>
+                <ul>
+                    <li style="font-size: 0.7em;">Find information about the target</li>
+                    <li style="font-size: 0.7em;">Avoid unnecessary load and make everything faster</li>
+                    <li style="font-size: 0.7em;">Expand your scope</li>
+                    <li style="font-size: 0.7em;">Multiple tools of the trade, my personal preferences:
+                        <ul>
+                            <li>Subdomains: <a href="https://github.com/OWASP/Amass">Amass</a></li>
+                            <li>Ports / tech detection: <a href="https://nmap.org/">nmap</a></li>
+                            <li>Web tech detection: <a href="https://github.com/projectdiscovery/httpx">httpx</a></li>
+                            <li>Virtualhosts / paths / content / assets: <a href="https://github.com/ffuf/ffuf">ffuf</a></li>
+                            <li>Inner links: <a href="https://github.com/hakluke/hakrawler">hakrawler</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+            <section>
+                <h4>Identification</h4>
+                <ul>
+                    <li style="font-size: 0.7em;">XSS: Look for reflections from parameter inputs</li>
+                    <li style="font-size: 0.7em;">LFI: Look for known strings (like "root:x:0:" for /etc/passwd)</li>
+                    <li style="font-size: 0.7em;">SQLi: Use timing based payloads with proper ffuf filters</li>
+                    <li style="font-size: 0.7em;">SSRF: Look for callbacks with <a href="https://github.com/projectdiscovery/interactsh">interactsh</a> / burp collaborator</li>
+                    <li style="font-size: 0.7em;">IDOR: Look for known non-accessible data</li>
+                    <li style="font-size: 0.7em;">SSTI: Look for calculation results based on your payloads</li>
+                    <li style="font-size: 0.7em;">...[insert your vulnerability category here]...</li>
+                </ul>
+                <p style="font-size: 0.6em;">Examples provided later in the presentation</p>
+            </section>
+            <section>
+                <h4>Reporting</h4>
+                <ul>
+                    <li style="font-size: 0.7em;">Push to external services: <a href="https://github.com/projectdiscovery/notify">notify</a>
+                        <ul>
+                            <li>Slack</li>
+                            <li>Discord</li>
+                            <li>Custom webhooks</li>
+                            <li>E-mail</li>
+                            <li>Output files</li>
+                        </ul>
+
+                    </li>
+                    <li style="font-size: 0.7em;">...or write your own
+                        <ul>
+                            <li>Simple example for Mattermost webhook can be found <a href="https://github.com/joohoi/ffuf-workshop/utils">here</a>.</li>
+                        </ul>
+
+                    </li>
+                </ul>
+            </section>
+        </section>
+                <section>
+                    <h2>Stitching it all together</h2>
+                    <section>
+                        <img src="puzzle.gif" />
+                        <h4>Scripting, parsing, piping and filtering</h4>
+                    </section>
+                    <section>
+                        <h4>Scripting</h4>
+                        <p style="font-size: 0.7em;">To allow easy extension and iterative automation build-up is to use either Python or shell scripting (for the shell of your choice).</p>
+                        <ul>
+                            <li style="font-size: 0.7em;">Benefits of 🐍
+                                <ul>
+                                    <li style="font-size: 0.8em;">Ability to act immediately on results, "event" based</li>
+                                    <li style="font-size: 0.8em;">Easy to filter results within the flow</li>
+                                    <li style="font-size: 0.8em;">Have more control without extensive knowledge of dark magic</li>
+                                    <li style="font-size: 0.8em;">Control of (potentially) parallel jobs</li>
+                                </ul>
+                            </li>
+                            <li style="font-size: 0.7em;">Benefits of 🐚
+                                <ul>
+                                    <li style="font-size: 0.8em;">Get going extremely fast</li>
+                                    <li style="font-size: 0.8em;">A lot of readily made FOSS tools on your disposal</li>
+                                    <li style="font-size: 0.8em;">Easy to scale even further with frameworks like Axiom</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </section>
+                    <section>
+                        <h4>Parsing</h4>
+                        <p style="font-size: 0.7em;">JSON is made to be read by computers, and it's your best ally. Most of the tools support it in one way or another. In general you'll be dealing with either newline separated text files, or JSON.</p>
+                        <ul>
+                            <li style="font-size: 0.7em;">Python supports JSON natively</li>
+                            <li style="font-size: 0.7em;"><a href="https://github.com/stedolan/jq">jq</a> is a awesome CLI tool for JSON parsing / filtering</li>
+                            <li style="font-size: 0.7em;">You can grep JSON using <a href="https://github.com/tomnomnom/gron">gron</a></li>
+                            <li style="font-size: 0.7em;">Cherrypick specific parts of urls with <a href="https://github.com/tomnomnom/unfurl">unfurl</a></li>
+                        </ul>
+                    </section>
+                    <section>
+                        <h4>Piping</h4>
+                        <p style="font-size: 0.7em;">Many different stages in the automation pipeline can branch in to multiple subtasks, so it's often good to store results from previous stages to a temporary file. This often helps you to debug possible issues as well.</p>
+                        <ul>
+                            <li style="font-size: 0.7em;">Use <a href="https://man7.org/linux/man-pages/man1/tee.1.html">tee</a> to append stdout to a file while also displaying it</li>
+                            <li style="font-size: 0.7em;"><a href="https://github.com/tomnomnom/anew">anew</a> adds only new unique lines to the output file</li>
+                        </ul>
+                    </section>
+                    <section>
+                        <h4>Filtering</h4>
+                        <p style="font-size: 0.7em;">Try to avoid creating unnecessary traffic, and especially spinning out of scope that can happen quite easily. Make sure to filter out unwanted entries from your automation workflow in an early stage. This will make your automation faster, and will cause considerably less legal issues down the road ;)</p>
+                        <p style="font-size: 0.7em;">An example of a simple python script that reads lines from stdin (intended to be used within a pipe) and outputting only http(s) urls within scope can be found <a href="https://github.com/joohoi/ffuf-workshop/utils/">here</a></p>
+                    </section>
+                </section>
+
+
+                        <section>
+            <h2>wordlists</h2>
+                            <section>
+            <p>Everything starts with a good, potentially context specific wordlist.</p>
+            <ul style="list-style-type: circle;">
+                <li style="font-size: 0.7em;">Simple txt files with one payload per line</li>
+                <li style="font-size: 0.7em;">You should build your own!</li>
+                <li style="font-size: 0.7em;">Get started with: <a href="https://github.com/six2dez/OneListForAll">https://github.com/six2dez/OneListForAll</a></li>
+                <li style="font-size: 0.7em;">...and <a href="https://github.com/danielmiessler/SecLists">https://github.com/danielmiessler/SecLists</a></li>
+          </ul>
+                            </section>
+                            <section>
+                                <p style="font-size: 0.8em;">A simple example of a context specific addition to a default wordlist is using output from recon to feed into wordlists for the next stages.</p>
+                                <pre><code data-line-numbers>#!/bin/bash
+# Optimally you already have the links from a previous step
+echo 'https://target.tld' |hakrawler -subs -u |tee target.tld.txt
+cat target.tld.txt |unfurl keys |anew custom_words.txt
+cat target.tld.txt |unfurl values |anew custom_words.txt
+# Add common entries from a public SecLists wordlist
+cat burp-parameter-names.txt |anew custom_words.txt
+                                </code></pre>
+                            </section>
+        </section>
+                <section>
+                    <img src="ffuf_logo.png" width="60%">
+                    <!--
+                  <code><pre>
+                      /'___\  /'___\           /'___\
+                     /\ \__/ /\ \__/  __  __  /\ \__/
+                     \ \ ,__\\ \ ,__\/\ \/\ \ \ \ ,__\
+                      \ \ \_/ \ \ \_/\ \ \_\ \ \ \ \_/
+                       \ \_\   \ \_\  \ \____/  \ \_\
+                        \/_/    \/_/   \/___/    \/_/
+                  </pre></code>-->
+                    <p style="font-size: 0.8em;">A web fuzzing tool that aims to be accurate, reliable and fast.</p>
+                    <p style="font-size: 0.8em;">Swiss army knife: giving the user as much control as possible.</p>
+                    <p style="font-size: 0.8em;">Feature-rich. If it doesn't exist, you don't need it (joking obv.)</p>
+                </section>
+        <section>
+            <h3>Behind the scenes</h3>
+            <section>
+            <pre><code data-line-numbers>GET /path/resourcename?id=12345 HTTP/1.1
+Host: ffuf.io.fi
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; ...
+Accept: text/html
+Connection: keep-alive
+Cookie: cookiename=cookievalue;session_id=1234567890
+Pragma: no-cache
+Cache-Control: no-cache</code></pre></section>
+            <section>
+                           <pre><code data-line-numbers="1,6">GET /path/FUZZRES?id=12345 HTTP/1.1
+Host: ffuf.io.fi
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; ...
+Accept: text/html
+Connection: keep-alive
+Cookie: cookiename=FUZZCOOK;session_id=1234567890
+Pragma: no-cache
+Cache-Control: no-cache</code></pre><br />
+                <pre><code>$ ffuf -w custom_words.txt:KEYS -w cookies.txt:FUZZCOOK ...</code></pre>
+
+            </section>
+        </section>
+				<section>
+          <video data-autoplay muted loop src="ffuf_meme.mp4"></video>
+          <p style="font-size: 0.4em;">meme by: <a href="https://twitter.com/aufzayed/status/1459082169398317057">@aufzayed</a></p>
+				</section>
+<section>
+    <h2>FFUF Examples</h2>
+    <p style="font-size: 0.8em;">The examples show how things are done manually. Usually the only real modification that you need to do for automation is to use autocalibration. Typically -ac -ach (autocalibration per host) is enough.</p>
+</section>
+                 <section>
+           <h2>Resource discovery</h2>
+           <pre><code style="font-size: 0.8em;">ffuf -w "/path/to/wordlist" -u "https://ffuf.io.fi/FUZZ" -t 100 -c</code></pre>
+           <h2>Password bruteforcing</h2>
+           <pre><code style="font-size: 0.8em;">ffuf -c -X POST -H "Content-Type: application/x-www-form-urlencoded" \
+     -d "username=joohoi&password=FUZZ" -w passwords.txt \
+     -u "https://ffuf.io.fi/login.php" -fr "error"</code></pre>
+          </section>
+          <section>
+            <h2>Multiple wordlists</h2>
+            <h4>(and HTTP Basic auth bruteforcing)</h4>
+            <pre><code style="font-size: 0.8em;">ffuf -c -w "users.txt:USER" -w "passwords.txt:PASS" \
+    -u "https://USER:PASS@ffuf.io.fi/secure/" -fc 401</code></pre>
+          </section>
+          <section>
+            <h2>Virtualhost discovery</h2>
+            <pre><code style="font-size: 0.8em;">ffuf -c -w SecLists/Discovery/DNS/fierce-hostlist.txt \
+     -H "Host: FUZZ.ffuf.io.fi" -t 1000 -u "http://ffuf.io.fi/"</code></pre>
+          </section>
+	  <section>
+            <h2>Parameter discovery</h2>
+            <pre><code style="font-size: 0.8em;">ffuf -c -w "~/SecLists/Discovery/Web-Content/burp-parameter-names.txt" \
+    -u "https://ffuf.io.fi/content.php?FUZZ=true"</code></pre>
+            <h2>GET parameter fuzzing</h2>
+            <pre><code style="font-size: 0.8em;">seq 1 10000 > numbers.txt && \
+ffuf -c -w "numbers.txt" -u "https://ffuf.io.fi/content.php?id=FUZZ"</code></pre>
+	  </section>
+	  <section>
+            <h2>XSS helper: find filtered characters</h2>
+            <pre><code style="font-size: 0.8em;"># chars.txt with a list of special characters and/or strings
+ffuf -w chars.txt -u https://ffuf.io.fi/reflection.php?data=abcdFUZZefg \
+    -c -v -fr "abcdFUZZefg"</code></pre>
+	    <h2>Template injection</h2>
+	    <pre><code style="font-size: 0.8em;"># ti.txt with different template injection payloads with a common outcome
+ffuf -w ti.txt -u https://ffuf.io.fi/reflection.php?ti=FUZZ -mr 'abc42abc' -v -c</code></pre>
+          <p style="font-size: 0.6em">...where the wordlist contains test cases like abc{{ 6*7 }}abc</p>
+	  </section>
+      <section>
+            <h2>SQL injections</h2>
+            <pre><code style="font-size: 0.8em;">ffuf -w sqli.txt -u https://ffuf.io.fi/search.php?q=FUZZ -c -v -ft '<5000'</code></pre>
+            <p style="font-size: 0.6em">...where the wordlist contains test cases like: ') or sleep(5)='</p>
+	    <h2>Local file inclusion</h2>
+	    <pre><code style="font-size: 0.8em;">ffuf -w lfi.txt -u https://ffuf.io.fi/show.php?file=FUZZ -mr 'root:x:' -v -c</code></pre>
+          <p style="font-size: 0.6em">...where the wordlist includes test cases like ../../../etc/passwd</p>
+	  </section><section>
+            <h2>Go wide!</h2>
+            <pre><code style="font-size: 0.8em;">ffuf -w hosts.txt:HOST -u https://HOST/.git/config -c -v -mr '\[core\]'</code></pre>
+            <p style="font-size: 0.6em">...to find exposed git repositories to extract</p>
+	  </section>
+        <section>
+            <h2>Before your start</h2>
+            <ul>
+                <li style="font-size: 0.7em;">Perfect is the worst enemy of done</li>
+                <li style="font-size: 0.7em;">Start small, expand iteratively</li>
+                <li style="font-size: 0.7em;">Automation pipelines are modular. Reuse what you have.</li>
+            </ul>
+        </section>
+        <section>
+            <h2>Further learning</h2>
+            <ul style="list-style-type: circle;">
+                <li style="font-size: 0.7em;"><a href="https://codingo.io/tools/ffuf/bounty/2020/09/17/everything-you-need-to-know-about-ffuf.html">https://codingo.io/tools/ffuf/bounty/2020/09/17/everything-you-need-to-know-about-ffuf.html</a></li>
+                <li style="font-size: 0.7em;">Manual ffuf playground: <a href="http://ffuf.me">http://ffuf.me</a></li>
+                <li style="font-size: 0.7em;"><a href="https://github.com/joohoi/ffuf-workshop">https://github.com/joohoi/ffuf-workshop</a></li>
+                <li style="font-size: 0.7em;">ffuf -h ;)</li>
+            </ul>
+        </section>
+        <section>
+          <img src="great_power.gif" />
+        </section>
+        <section>
+          <h2>Play nice!</h2>
+          <p style="font-size: 0.8em;">...and be effective at the same time.</p>
+          <p style="font-size: 0.8em;">Especially when scanning live production targets, it's best to scale horizontally.</p>
+            <p style="font-size: 0.8em;">This way you won't be stressing a single server too much. You might avoid getting blocked by rate limits / WAF's this way too ;)</p>
+        </section>
+                <section>
+                    <h3>Common pitfalls</h3>
+                    <ul>
+                        <li style="font-size: 0.7em;">Out of available file descriptors</li>
+                        <li style="font-size: 0.7em;">Not terminating the pipeline early enough in case of an error</li>
+                        <li style="font-size: 0.7em;">Getting rate limited / blocked by WAF</li>
+                    </ul>
+                </section>
+        <section>
+            <h2>SCAAAAAAAAAAAALE</h2>
+          <img src="axiom_banner.png" />
+          <p><a href="https://github.com/pry0cc/axiom">https://github.com/pry0cc/axiom</a></p>
+        </section>
+				<section style="text-align: left;">
+					<h1>A HREF</h1>
+                    <ul style="list-style-type: circle;">
+                        <li style="font-size: 0.5em;">slides: <a href="https://io.fi/ffuf-workshop">https://io.fi/ffuf-workshop</a></li>
+                        <li style="font-size: 0.5em;">ffuf: <a href="https://github.com/ffuf/ffuf">https://github.com/ffuf/ffuf</a></li>
+                        <li style="font-size: 0.5em;">additional material: <a href="https://github.com/joohoi/ffuf-workshop">https://github.com/joohoi/ffuf-workshop</a></li>
+                        <li style="font-size: 0.5em;">me: <a href="https://twitter.com/joohoi">https://twitter.com/joohoi</a></li>
+                    </ul><br />
+                    <img src="ffuf_waving_250.png" width="15%">
+				</section>
+
+			</div>
+
+		</div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/zoom/zoom.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/search/search.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+
+			// Also available as an ES module, see:
+			// https://revealjs.com/initialization/
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				center: true,
+				hash: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
+			});
+
+		</script>
+
+	</body>
+</html>

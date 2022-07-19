@@ -211,3 +211,9 @@ json, ejson, html, md, csv, ecsv
  - CSV: `csv`
  - Base64 encoded payload in CSV for funky input data `ecsv`
  - All of the above: `all`, the `-o filename` is used for the base name only, and the file format part is appended as an file name extension.
+
+#### JSONlines stdout output
+
+Changing the stdout messages from human-friendly default formatting to a jsonlines format for machine readable real-time output can prove to be beneficial in cases where the user might want to run `ffuf` as a part of automation process and to react on the matches real-time.
+
+The stdout output can be changed to jsonlines with a command line flag `-json`
