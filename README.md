@@ -38,7 +38,7 @@ echo 'random{{5*5}}random' > ssti.txt
 
 # fuzz through all potential combinations of web path, parameter name and the SSTI payload
 # note the -mr parameter detection rule here
-ffuf -v -w inscope_paths.txt:PATH -w custom_keys:KEY -w ssti.txt:VALUE -mr 'random25random' -o target_ffuf.json -u 'PATH?KEY=VALUE'
+ffuf -v -w inscope_paths.txt:PATH -w custom_keys.txt:KEY -w ssti.txt:VALUE -mr 'random25random' -o target_ffuf.json -u 'PATH/?KEY=VALUE'
 
 # Use jq to parse the ffuf results. note the -e flag that causes jq to write exit code based on result
 # so we can detect if there were findings or not. Store the return code to a variable "retVal"
@@ -58,4 +58,4 @@ fi
 ## Testing range
 
 There is a sample web application with couple of vulnerabilities included available for you to mess around with. Going forward, it's greatly beneficial to build your own testing range to further develop your automation workflows.
-
+/
