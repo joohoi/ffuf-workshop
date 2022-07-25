@@ -37,6 +37,9 @@ parser.add_argument("-s", "--scope", help="Commma separated list of in-scope dom
 parser.add_argument("-o", "--output", help="Output format: domain, schemedomain, dirpath, path, full. Default: full", default="full", type=str)
 args = parser.parse_args()
 
+if "://" in args.scope:
+    args.scope = "".join(args.scope.split("://")[1:])
+
 for line in sys.stdin:
     line = line.strip()
     if is_http(line) and in_scope(line, args.scope):
