@@ -63,6 +63,17 @@ There is a sample, completely artificial web application with couple of vulnerab
 
 The testing range instances are identical, but there's a couple as one box can only handle a limited amount of simultaneous connections.
 
+Example application can be found at:
+
+* http://ws.0a.re
+* http://ws2.0a.re
+* http://ws3.0a.re
+* http://ws4.0a.re
+
+Only assets under domain 0a.re are in scope. Have fun!
+
+Note: these vulnerabilities can be found manually pretty easily too, but the aim here is to test an automation pipeline.
+
 ## Tools examples
 
 Note that many of these tools are written in Go, and in order to install them you need to have a fairly recent version of Go in your system. A guided install is available at <a href="https://go.dev/doc/install">https://go.dev/doc/install</a> 
