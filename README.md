@@ -53,7 +53,7 @@ if [ $retVal -eq 0 ]; then
     echo "SSTI vulnerabilities found:" > target_report.txt
     cat target_results.txt >> target_report.txt
     # Send off the results
-    cat target_report.py |python3 mm_webhook.py
+    cat target_report.txt |python3 mm_webhook.py
 fi
 ```
 
