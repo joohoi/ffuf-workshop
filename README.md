@@ -66,9 +66,6 @@ The testing range instances are identical, but there's a couple as one box can o
 Example application can be found at:
 
 * http://ws.0a.re
-* http://ws2.0a.re
-* http://ws3.0a.re
-* http://ws4.0a.re
 
 Only assets under domain 0a.re are in scope. Have fun!
 
